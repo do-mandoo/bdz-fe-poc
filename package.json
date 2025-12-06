@@ -1,5 +1,5 @@
 {
-  "name": "myfirstexpoapp",
+  "name": "bdz-fe-poc",
   "main": "expo-router/entry",
   "version": "1.0.0",
   "scripts": {

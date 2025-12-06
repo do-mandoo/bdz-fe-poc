@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "MyFirstExpoApp",
-    "slug": "MyFirstExpoApp",
+    "name": "BDZ-FE-POC",
+    "slug": "BDZ-FE-POC",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "myfirstexpoapp",
+    "scheme": "bdz-fe-poc",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
