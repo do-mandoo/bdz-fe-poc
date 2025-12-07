@@ -187,7 +187,89 @@ import { PARKING_LOTS, RESERVATIONS, QUICK_QUESTIONS } from '@/data';
 
 ---
 
-## 📚 참고 자료
+## 📚 설치된 라이브러리
+
+POC에서 사용할 핵심 라이브러리들이 미리 설치되어 있습니다.
+
+### NativeWind (Tailwind CSS)
+
+React Native에서 Tailwind CSS 문법을 사용할 수 있습니다.
+
+```tsx
+import { View, Text } from 'react-native';
+
+export default function Example() {
+  return (
+    <View className="flex-1 items-center justify-center bg-blue-500">
+      <Text className="text-white text-2xl font-bold">Hello!</Text>
+    </View>
+  );
+}
+```
+
+> 📖 [NativeWind 문서](https://www.nativewind.dev/)
+
+### Axios
+
+HTTP 요청을 위한 라이브러리입니다.
+
+```typescript
+import axios from 'axios';
+
+const fetchData = async () => {
+  const response = await axios.get('https://api.example.com/data');
+  return response.data;
+};
+```
+
+### Jotai (상태 관리)
+
+가볍고 간단한 상태 관리 라이브러리입니다. Provider 없이 바로 사용 가능합니다.
+
+```typescript
+import { atom, useAtom } from 'jotai';
+
+// atom 정의
+const countAtom = atom(0);
+
+// 컴포넌트에서 사용
+function Counter() {
+  const [count, setCount] = useAtom(countAtom);
+  return (
+    <Button onPress={() => setCount(c => c + 1)}>
+      Count: {count}
+    </Button>
+  );
+}
+```
+
+> 📖 [Jotai 문서](https://jotai.org/)
+
+### TanStack Query (React Query)
+
+서버 상태 관리 및 데이터 페칭 라이브러리입니다. Provider가 `app/_layout.tsx`에 설정되어 있습니다.
+
+```typescript
+import { useQuery } from '@tanstack/react-query';
+
+function ParkingList() {
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['parkingLots'],
+    queryFn: () => axios.get('/api/parking-lots').then(res => res.data),
+  });
+
+  if (isLoading) return <Text>로딩 중...</Text>;
+  if (error) return <Text>에러 발생</Text>;
+
+  return data.map(lot => <ParkingCard key={lot.id} {...lot} />);
+}
+```
+
+> 📖 [TanStack Query 문서](https://tanstack.com/query/latest)
+
+---
+
+## 📖 참고 자료
 
 - [Expo 공식 문서](https://docs.expo.dev/)
 - [React Native 공식 문서](https://reactnative.dev/)
