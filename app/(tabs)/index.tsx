@@ -1,13 +1,15 @@
 import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import { Platform, StyleSheet, TouchableOpacity, View } from 'react-native';
 
 import { HelloWave } from '@/components/hello-wave';
 import ParallaxScrollView from '@/components/parallax-scroll-view';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+import { Link, useRouter } from 'expo-router';
 
 export default function HomeScreen() {
+  const router = useRouter();
+
   return (
     <ParallaxScrollView
       headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
@@ -22,6 +24,24 @@ export default function HomeScreen() {
         <ThemedText type='title'>Welcome!</ThemedText>
         <HelloWave />
       </ThemedView>
+
+      {/* 챗봇 바로가기 버튼 */}
+      <TouchableOpacity
+        style={styles.chatbotButton}
+        onPress={() => router.push('/(tabs)/chatbot')}
+        activeOpacity={0.8}
+      >
+        <View style={styles.chatbotButtonContent}>
+          <ThemedText style={styles.chatbotEmoji}>🤖</ThemedText>
+          <View>
+            <ThemedText style={styles.chatbotTitle}>주차 도우미 챗봇</ThemedText>
+            <ThemedText style={styles.chatbotSubtitle}>
+              AI와 대화하며 주차장 찾기
+            </ThemedText>
+          </View>
+        </View>
+      </TouchableOpacity>
+
       <ThemedView style={styles.stepContainer}>
         <ThemedText type='subtitle'>Step 1: Try it</ThemedText>
         <ThemedText>
@@ -95,5 +115,37 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     position: 'absolute',
+  },
+  chatbotButton: {
+    backgroundColor: '#007AFF',
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 24,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  chatbotButtonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+  },
+  chatbotEmoji: {
+    fontSize: 48,
+  },
+  chatbotTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    marginBottom: 4,
+  },
+  chatbotSubtitle: {
+    fontSize: 14,
+    color: '#E3F2FF',
   },
 });
