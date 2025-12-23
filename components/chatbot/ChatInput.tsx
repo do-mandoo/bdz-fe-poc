@@ -3,7 +3,7 @@
  */
 
 import { useState } from 'react';
-import { View, TextInput, TouchableOpacity, Text, ActivityIndicator, StyleSheet } from 'react-native';
+import { View, TextInput, TouchableOpacity, Text, ActivityIndicator } from 'react-native';
 
 interface ChatInputProps {
   onSend: (message: string) => void;
@@ -21,11 +21,11 @@ export function ChatInput({ onSend, isLoading }: ChatInputProps) {
   };
 
   return (
-    <View style={styles.container} className="px-4 py-3 bg-white border-t border-gray-200">
+    <View className="flex-row w-full pb-4 bg-gray-50">
       <TextInput
-        className="flex-1 bg-gray-100 rounded-full px-5 py-3 mr-3 text-base"
+        className="flex-1 bg-gray-200 rounded-full pl-5 pr-4 py-2.5 ml-4 mr-3 text-sm"
         placeholder="메시지를 입력하세요"
-        placeholderTextColor="#9CA3AF"
+        placeholderTextColor="#6B7280"
         value={input}
         onChangeText={setInput}
         onSubmitEditing={handleSend}
@@ -35,31 +35,17 @@ export function ChatInput({ onSend, isLoading }: ChatInputProps) {
       />
 
       <TouchableOpacity
-        className={`w-12 h-12 rounded-full ${
-          input.trim() && !isLoading ? 'bg-blue-500' : 'bg-gray-300'
-        }`}
-        style={styles.sendButton}
+        className="w-11 h-11 rounded-full items-center justify-center mr-4 bg-blue-500 active:bg-blue-600"
         onPress={handleSend}
         disabled={!input.trim() || isLoading}
+        activeOpacity={0.8}
       >
         {isLoading ? (
           <ActivityIndicator color="white" size="small" />
         ) : (
-          <Text className="text-white text-sm font-semibold">전송</Text>
+          <Text className="text-white text-sm font-bold">send</Text>
         )}
       </TouchableOpacity>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    width: '100%',
-    alignSelf: 'flex-start',
-  },
-  sendButton: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-});

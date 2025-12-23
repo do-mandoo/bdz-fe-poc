@@ -1,97 +1,85 @@
 /**
  * 타이핑 인디케이터 (로딩 애니메이션)
+ * . -> .. -> ... 순차적으로 파란색 dot 표시
  */
 
-import { useEffect, useRef } from 'react';
-import { View, Text, Animated, Easing } from 'react-native';
+import { useEffect, useState } from 'react';
+import { View, Text, StyleSheet } from 'react-native';
 
 export function TypingIndicator() {
-  const dot1 = useRef(new Animated.Value(0)).current;
-  const dot2 = useRef(new Animated.Value(0)).current;
-  const dot3 = useRef(new Animated.Value(0)).current;
+  const [dotCount, setDotCount] = useState(1);
 
   useEffect(() => {
-    const animation = Animated.loop(
-      Animated.sequence([
-        Animated.timing(dot1, {
-          toValue: 1,
-          duration: 400,
-          easing: Easing.ease,
-          useNativeDriver: true,
-        }),
-        Animated.timing(dot2, {
-          toValue: 1,
-          duration: 400,
-          easing: Easing.ease,
-          useNativeDriver: true,
-        }),
-        Animated.timing(dot3, {
-          toValue: 1,
-          duration: 400,
-          easing: Easing.ease,
-          useNativeDriver: true,
-        }),
-        Animated.parallel([
-          Animated.timing(dot1, {
-            toValue: 0,
-            duration: 400,
-            useNativeDriver: true,
-          }),
-          Animated.timing(dot2, {
-            toValue: 0,
-            duration: 400,
-            useNativeDriver: true,
-          }),
-          Animated.timing(dot3, {
-            toValue: 0,
-            duration: 400,
-            useNativeDriver: true,
-          }),
-        ]),
-      ])
-    );
+    const interval = setInterval(() => {
+      setDotCount(prev => (prev >= 3 ? 1 : prev + 1));
+    }, 500);
 
-    animation.start();
-    return () => animation.stop();
+    return () => clearInterval(interval);
   }, []);
 
-  const animateDot = (animatedValue: Animated.Value) => ({
-    opacity: animatedValue,
-    transform: [
-      {
-        translateY: animatedValue.interpolate({
-          inputRange: [0, 1],
-          outputRange: [0, -8],
-        }),
-      },
-    ],
-  });
-
   return (
-    <View className="mb-4">
-      <Text className="text-xs text-gray-500 mb-1 ml-2">주차 도우미</Text>
-      <View className="flex-row items-start">
+    <View style={styles.container}>
+      <Text style={styles.label}>주차 도우미</Text>
+      <View style={styles.row}>
         {/* 봇 아이콘 */}
-        <View className="w-8 h-8 rounded-full bg-gray-700 items-center justify-center mr-2">
-          <Text className="text-base">🤖</Text>
+        <View style={styles.avatar}>
+          <Text style={styles.emoji}>🤖</Text>
         </View>
 
         {/* 타이핑 버블 */}
-        <View className="bg-gray-100 rounded-2xl px-4 py-3 flex-row gap-1.5 items-center min-h-[40px]">
-          <Animated.View
-            className="w-2 h-2 rounded-full bg-gray-400"
-            style={animateDot(dot1)}
-          />
-          <Animated.View
-            className="w-2 h-2 rounded-full bg-gray-400"
-            style={animateDot(dot2)}
-          />
-          <Animated.View
-            className="w-2 h-2 rounded-full bg-gray-400"
-            style={animateDot(dot3)}
-          />
+        <View style={styles.bubble}>
+          <View style={[styles.dot, dotCount >= 1 && styles.dotActive]} />
+          <View style={[styles.dot, dotCount >= 2 && styles.dotActive]} />
+          <View style={[styles.dot, dotCount >= 3 && styles.dotActive]} />
         </View>
       </View>
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    marginBottom: 16,
+  },
+  label: {
+    fontSize: 12,
+    color: '#6B7280',
+    marginBottom: 4,
+    marginLeft: 8,
+  },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+  },
+  avatar: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#374151',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 8,
+  },
+  emoji: {
+    fontSize: 16,
+  },
+  bubble: {
+    backgroundColor: '#F3F4F6',
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    flexDirection: 'row',
+    gap: 6,
+    alignItems: 'center',
+    minHeight: 40,
+  },
+  dot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#D1D5DB',
+  },
+  dotActive: {
+    backgroundColor: '#3B82F6',
+  },
+});

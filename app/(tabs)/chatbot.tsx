@@ -2,22 +2,29 @@
  * 챗봇 메인 화면
  */
 
-import { useEffect, useRef } from 'react';
-import { 
-  View, 
-  Text, 
-  FlatList, 
-  TouchableOpacity, 
+import { useEffect, useRef, useCallback, useState } from 'react';
+import {
+  View,
+  Text,
+  FlatList,
   Alert,
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
 import { useChat } from '@/hooks/use-chat';
+import { useLocation } from '@/hooks/use-location';
 import { ChatMessage } from '@/components/chatbot/ChatMessage';
 import { ChatInput } from '@/components/chatbot/ChatInput';
 import { QuickReplies } from '@/components/chatbot/QuickReplies';
 import { TypingIndicator } from '@/components/chatbot/TypingIndicator';
-import { CURRENT_LOCATION, DEFAULT_DESTINATION } from '@/data/locations';
+import { ActionButtons } from '@/components/chatbot/ActionButtons';
+import { DEFAULT_DESTINATION } from '@/data/locations';
+import {
+  searchNearbyParkingLots,
+  searchParkingLotsByKeyword,
+  extractLocationFromMessage,
+  formatParkingRecommendation,
+} from '@/services/parking-search';
 import type { ChatMessage as ChatMessageType } from '@/hooks/use-chat';
 
 // AI Provider 설정
@@ -25,13 +32,15 @@ const AI_PROVIDER = (process.env.EXPO_PUBLIC_AI_PROVIDER || 'claude') as 'claude
 
 // 추천 질문
 const QUICK_QUESTIONS = [
-  { id: 'q1', label: '오늘 저녁 강남역 주차 추천', message: '오늘 저녁 강남역 주차 추천해줘' },
+  { id: 'q1', label: '오늘 저녁 강남역 주변 주차 추천해줘', message: '오늘 저녁 강남역 주변 주차 추천해줘' },
   { id: 'q2', label: '가장 저렴한 주차장', message: '가장 저렴한 주차장 알려줘' },
 ];
 
 export default function ChatbotScreen() {
   const { messages, isLoading, error, sendMessage, initChat } = useChat(AI_PROVIDER);
+  const { location, address, isLoading: isLocationLoading, getCurrentLocation } = useLocation();
   const flatListRef = useRef<FlatList>(null);
+  const [isSearching, setIsSearching] = useState(false);
 
   // 초기 인사말
   useEffect(() => {
@@ -50,7 +59,7 @@ export default function ChatbotScreen() {
   // 목적지 설정 버튼
   const handleSetDestination = () => {
     if (isLoading) return;
-    
+
     Alert.alert(
       '목적지 설정',
       `${DEFAULT_DESTINATION.name}으로 설정되었습니다.`,
@@ -64,20 +73,49 @@ export default function ChatbotScreen() {
     );
   };
 
-  // 현재 위치 기준 찾기
-  const handleSearchNearby = () => {
-    if (isLoading) return;
-    
-    Alert.alert(
-      '현재 위치',
-      `${CURRENT_LOCATION.name}에서 주차장을 찾습니다.`,
-      [
-        {
-          text: '검색',
-          onPress: () => sendMessage(`${CURRENT_LOCATION.name} 근처 주차장 찾아줘`),
-        },
-        { text: '취소', style: 'cancel' },
-      ]
+  // 현재 위치 기준 찾기 (실제 GPS 사용)
+  const handleSearchNearby = useCallback(async () => {
+    if (isLoading || isLocationLoading || isSearching) return;
+
+    setIsSearching(true);
+
+    try {
+      const coords = await getCurrentLocation();
+
+      if (!coords) {
+        Alert.alert('위치 오류', '현재 위치를 가져올 수 없습니다. 위치 권한을 확인해주세요.');
+        setIsSearching(false);
+        return;
+      }
+
+      // 현재 위치 기준 주차장 검색
+      const nearbyParkingLots = searchNearbyParkingLots(coords, 10);
+      const recommendation = formatParkingRecommendation(nearbyParkingLots, address || '현재 위치');
+
+      // AI 메시지로 추천 결과 표시
+      sendMessage(`현재 위치(${address || '알 수 없음'}) 기준 주차장 추천해줘`);
+    } catch (err) {
+      Alert.alert('오류', '주차장 검색 중 오류가 발생했습니다.');
+    } finally {
+      setIsSearching(false);
+    }
+  }, [isLoading, isLocationLoading, isSearching, getCurrentLocation, address, sendMessage]);
+
+  // FlatList Footer에 액션 버튼과 로딩 인디케이터 포함
+  const renderFooter = () => {
+    return (
+      <View>
+        {/* 액션 버튼 (초기 화면에만 표시) */}
+        {messages.length <= 1 && !isLoading && !isLocationLoading && !isSearching && (
+          <ActionButtons
+            onSetDestination={handleSetDestination}
+            onSearchNearby={handleSearchNearby}
+            disabled={isLoading || isLocationLoading || isSearching}
+          />
+        )}
+        {/* 로딩 인디케이터 - 위치 검색 중이거나 AI 응답 대기 중 */}
+        {(isLoading || isLocationLoading || isSearching) && <TypingIndicator />}
+      </View>
     );
   };
 
@@ -104,42 +142,22 @@ export default function ChatbotScreen() {
         data={messages}
         keyExtractor={item => item.id}
         renderItem={({ item }) => <ChatMessage message={item} />}
-        contentContainerStyle={{ 
+        contentContainerStyle={{
           padding: 16,
           paddingBottom: 8,
+          flexGrow: 1,
         }}
         showsVerticalScrollIndicator={false}
-        ListFooterComponent={isLoading ? <TypingIndicator /> : null}
+        ListFooterComponent={renderFooter}
         onContentSizeChange={() => {
           flatListRef.current?.scrollToEnd({ animated: true });
         }}
       />
 
-      {/* 액션 버튼 영역 (초기 화면에만 표시) */}
-      {messages.length <= 1 && !isLoading && (
-        <View className="px-4 pb-2 gap-2">
-          <TouchableOpacity
-            className="bg-blue-500 rounded-full py-2.5 items-center active:bg-blue-600"
-            onPress={handleSetDestination}
-            activeOpacity={0.8}
-          >
-            <Text className="text-white font-semibold text-sm">목적지 설정하기</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            className="bg-gray-200 rounded-full py-2.5 items-center active:bg-gray-300"
-            onPress={handleSearchNearby}
-            activeOpacity={0.8}
-          >
-            <Text className="text-gray-700 font-semibold text-sm">현재 위치 기준 찾기</Text>
-          </TouchableOpacity>
-        </View>
-      )}
-
       {/* 빠른 답변 버튼 */}
-      <QuickReplies 
-        replies={QUICK_QUESTIONS} 
-        onSelect={sendMessage} 
+      <QuickReplies
+        replies={QUICK_QUESTIONS}
+        onSelect={sendMessage}
         disabled={isLoading}
       />
 
