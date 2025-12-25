@@ -7,6 +7,7 @@ import { WebView } from 'react-native-webview';
 // 카카오맵 API 키
 const KAKAO_MAP_API_KEY = process.env.EXPO_PUBLIC_KAKAO_JS_KEY;
 
+// 카카오맵 웹뷰 URL
 const MAP_URL = 'https://do-mandoo.github.io/map-practice/';
 
 interface ParkingMapProps {
