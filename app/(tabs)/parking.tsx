@@ -31,7 +31,7 @@ function calculateDistance(lat1: number, lng1: number, lat2: number, lng2: numbe
   return R * c;
 }
 
-// 보기 모드
+// 보기 모드 탭 형식
 type ViewMode = 'map' | 'list';
 
 export default function ParkingScreen() {
