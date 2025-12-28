@@ -20,8 +20,7 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.jinsoljin.BDZFEPOC",
-      "versionCode": 1
+      "package": "com.bdz.bdzpoc"
     },
     "web": {
       "output": "static",
@@ -52,6 +51,6 @@
         "projectId": "7ba944ce-bd93-4f59-bf05-9b4913f2a780"
       }
     },
-    "owner": "jin-sol-jin"
+    "owner": "bdz-fe-poc"
   }
 }
