@@ -48,8 +48,9 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "4be13ecb-9011-45a9-b249-e0ff4a62aa9a"
+        "projectId": "7ba944ce-bd93-4f59-bf05-9b4913f2a780"
       }
-    }
+    },
+    "owner": "bdz-fe-poc"
   }
 }
